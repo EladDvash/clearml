@@ -95,7 +95,7 @@ class CreateAndPopulate(object):
         if raise_on_missing_entries and not base_task_id:
             if not script:
                 raise ValueError("Entry point script not provided")
-            if not repo and not folder and not Path(script).is_file():
+            if not repo and not folder and not Path(script).is_file() and not ('-m ' in script):
                 raise ValueError("Script file \'{}\' could not be found".format(script))
         if raise_on_missing_entries and commit and branch:
             raise ValueError(
@@ -147,8 +147,8 @@ class CreateAndPopulate(object):
             else:
                 entry_point = (Path(self.folder) / self.script).as_posix()
             entry_point = os.path.abspath(entry_point)
-            if not os.path.isfile(entry_point):
-                raise ValueError("Script entrypoint file \'{}\' could not be found".format(entry_point))
+            # if not os.path.isfile(entry_point):
+            #     raise ValueError("Script entrypoint file \'{}\' could not be found".format(entry_point))
 
             local_entry_file = entry_point
             repo_info, requirements = ScriptInfo.get(

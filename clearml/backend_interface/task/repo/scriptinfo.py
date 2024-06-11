@@ -5,7 +5,7 @@ from datetime import datetime
 from functools import partial
 from tempfile import gettempdir, mkdtemp
 from urllib.parse import urlparse
-
+from importlib import util
 import attr
 import logging
 import json
@@ -1045,14 +1045,15 @@ class ScriptInfo(object):
             cwd = cls._cwd()
             scripts_path = [Path(cls._absolute_path(os.path.normpath(f), cwd)) for f in filepaths if f]
             scripts_path = [f for f in scripts_path if f.exists()]
+            scripts_dir = [f.parent for f in scripts_path]
             if not scripts_path:
-                for f in filepaths or []:
-                    if f and f.endswith("/<stdin>"):
-                        raise ScriptInfoError("python console detected")
-
-                raise ScriptInfoError("Script file {} could not be found".format(filepaths))
-
-        scripts_dir = [f.parent for f in scripts_path]
+                scripts_path = ['-m ' + f.split('/-m ')[-1] for f in filepaths if Path(cls._absolute_path(f.split('/-m ')[-1].replace('.', '/') + '.py', cwd)).exists()]
+                scripts_dir = [Path(cls._absolute_path('', cwd)) for f in filepaths]
+                if not scripts_path:
+                    for f in filepaths or []:
+                        if f and f.endswith("/<stdin>"):
+                            raise ScriptInfoError("python console detected")
+                    raise ScriptInfoError("Script file {} could not be found".format(filepaths))
 
         def _log(msg, *args, **kwargs):
             if not log:
